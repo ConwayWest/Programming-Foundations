@@ -14,7 +14,7 @@ def valid_number?(num)
 end
 
 def operation_to_message(op)
-  case op 
+  case op
   when '1'
     'Adding'
   when '2'
@@ -90,16 +90,16 @@ loop do # main loop
 
   result = case operator
            when '1'
-            number1.to_i() + number2.to_i()
+             number1.to_i() + number2.to_i()
            when '2'
-            number1.to_i() - number2.to_i()
+             number1.to_i() - number2.to_i()
            when '3'
-            result = number1.to_i() * number2.to_i()
+             number1.to_i() * number2.to_i()
            when '4'
-            result = number1.to_f() / number2.to_f()
+             number1.to_f() / number2.to_f()
            else
-            prompt("Operation number not listed")
-  end
+             prompt("Operation number not listed")
+           end
 
   prompt("The result is #{result}")
   prompt("Would you like to perform another calculation? (Y or N)")
