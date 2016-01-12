@@ -1,0 +1,14 @@
+# calculator_messages.yml
+
+welcome: "Welcome to Integer Calculator! Enter your name please: "
+valid_name: "Make sure to use a valid name."
+hi: "Hi #{name}!"
+first_number: "What's the first number?"
+second_number: "What's the second number?"
+valid_number: "Hmm... that doesn't look like a valid number"
+choose: "Must choose 1, 2, 3 or 4"
+operation: "#{operation_to_message(operator)} the two numbers..."
+not_listed: "Operation number not listed"
+result: "The result is #{result}"
+another: "Would you like to perform another calculation? (Y or N)"
+thanks: "Thank you for using the calculator!"

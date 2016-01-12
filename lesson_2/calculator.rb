@@ -5,35 +5,40 @@
 
 # answer = Kernel.gets()
 # Kernel.puts(answer)
+require 'yaml'
+MESSAGES = YAML.load_file('calculator_messages.yml')
+
 def prompt(message)
   Kernel.puts("=> #{message}")
 end
 
 def valid_number?(num)
-  num.to_i() != 0
+  Integer(num) rescue false || Float(num) rescue false
 end
 
 def operation_to_message(op)
-  case op
-  when '1'
-    'Adding'
-  when '2'
-    'Subtracting'
-  when '3'
-    'Multiplying'
-  when '4'
-    'Dividing'
-  end
+  a = case op
+      when '1'
+        'Adding'
+      when '2'
+        'Subtracting'
+      when '3'
+        'Multiplying'
+      when '4'
+        'Dividing'
+      end
+  b = "something something"
+  a
 end
 
-prompt("Welcome to Calculator! Enter your name please: ")
+prompt(MESSAGES['welcome'])
 
 name = ''
 loop do
   name = Kernel.gets().chomp()
 
   if name.empty?()
-    prompt("Make sure to use a valid name.")
+    prompt(MESSAGES['valid_name'])
   else
     break
   end
@@ -44,25 +49,25 @@ prompt("Hi #{name}!")
 loop do # main loop
   number1 = ''
   loop do
-    prompt("What's the first number?")
+    prompt(MESSAGES['first_number'])
     number1 = Kernel.gets().chomp()
 
     if valid_number?(number1)
       break
     else
-      prompt("Hmm... that doesn't look like a valid number")
+      prompt(MESSAGES['valid_number'])
     end
   end
 
   number2 = ''
   loop do
-    prompt("What's the second number?")
+    prompt(MESSAGES['second_number'])
     number2 = Kernel.gets().chomp()
 
     if valid_number?(number2)
       break
     else
-      prompt("Hmm... that doesn't look like a valid number")
+      prompt(MESSAGES['valid_number'])
     end
   end
 
@@ -82,7 +87,7 @@ loop do # main loop
     if %w(1 2 3 4).include?(operator)
       break
     else
-      prompt("Must choose 1, 2, 3 or 4")
+      prompt(MESSAGES['choose'])
     end
   end
 
@@ -98,13 +103,13 @@ loop do # main loop
            when '4'
              number1.to_f() / number2.to_f()
            else
-             prompt("Operation number not listed")
+             prompt(MESSAGES['not_listed'])
            end
 
   prompt("The result is #{result}")
-  prompt("Would you like to perform another calculation? (Y or N)")
+  prompt(MESSAGES['another'])
   answer = Kernel.gets().chomp()
   break unless answer.downcase().start_with?('y')
 end
 
-prompt("Thank you for using the calculator!")
+prompt(MESSAGES['thanks'])
