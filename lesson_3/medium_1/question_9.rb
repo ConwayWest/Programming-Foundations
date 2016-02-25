@@ -13,13 +13,16 @@ munsters.each do |key, item|
     if key2 == "age"
       case item2
       when 0..17
-        munsters[key]["age_group"] = "kid"
+        a = {"age_group" => "kid"}
+        munsters[key] = munsters[key].merge(a)
       when 18..64
-        munsters[key]["age_group"] = "adult"
-      when item >= 65
-        munsters[key]["age_group"] = "senior"
+        a = {"age_group" => "adult"}
+        munsters[key] = munsters[key].merge(a)
+      else
+        a = {"age_group" => "senior"}
+        munsters[key] = munsters[key].merge(a)
       end
     end
   end
 end
-p munsters["Herman"]
+p munsters
