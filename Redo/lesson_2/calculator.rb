@@ -10,20 +10,28 @@ def prompt(message)
 end
 
 def valid_number?(num)
-  num.to_i() != 0
+  # if num.to_i.to_s == num
+  #   true
+  # elsif num.to_f.to_s == num
+  #   true
+  # else
+  #   false
+  # end
+  Integer(num) rescue false || Float(num) rescue false
 end
 
 def operation_to_message(op)
-  case op
-  when '1'
-    'Adding'
-  when '2'
-    'Subtracting'
-  when '3'
-    'Multiplying'
-  when '4'
-    'Dividing'
-  end
+  word = case op
+           when '1'
+             'Adding'
+           when '2'
+             'Subtracting'
+           when '3'
+             'Multiplying'
+           when '4'
+             'Dividing'
+         end
+  word
 end
 
 prompt("Welcome to Calculator! Enter your name:")
