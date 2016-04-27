@@ -1,4 +1,11 @@
 VALID_CHOICES = %w(r p s l sp).freeze
+WINNING_PAIRS = {
+  'r' => %w(s l),
+  'p' => %w(r sp),
+  's' => %w(p l),
+  'l' => %w(p sp),
+  'sp' => %w(r s)
+}.freeze
 player_score = 0
 computer_score = 0
 
@@ -10,35 +17,8 @@ def prompt(message)
   puts("=> #{message}")
 end
 
-def assign_choice(user_pick)
-  case user_pick
-  when 'r'
-    'rock'
-  when 'p'
-    'paper'
-  when 's'
-    'scissors'
-  when 'l'
-    'lizard'
-  when 'sp'
-    'spock'
-  end
-end
-
 def win?(first, second)
-  (first == 'rock' && (second == 'scissors' || second == 'lizard')) ||
-    (first == 'paper' && (second == 'rock' || second == 'spock')) ||
-    (first == 'scissors' && (second == 'paper' || second == 'lizard')) ||
-    (first == 'lizard' && (second == 'paper' || second == 'spock')) ||
-    (first == 'spock' && (second == 'rock' || second == 'scissors'))
-end
-
-def score_keeper(player, computer, player_point, computer_point)
-  if win?(player, computer)
-    player_point + 1
-  elsif win?(computer, player)
-    computer_point + 1
-  end
+  WINNING_PAIRS[first].include?(second)
 end
 
 def display_results(player, computer)
@@ -67,13 +47,25 @@ loop do
 
   computer_choice = VALID_CHOICES.sample
 
-  choice = assign_choice(choice)
-  computer_choice = assign_choice(computer_choice)
+  if win?(choice, computer_choice)
+    player_score += 1
+  elsif win?(computer_choice, choice)
+    computer_score += 1
+  end
 
   prompt("You chose: #{choice}; Computer chose: #{computer_choice}")
 
   display_results(choice, computer_choice)
-  score_keeper(choice, computer_choice, player_score, computer_score)
+
+  if player_score == 5
+    prompt("You won the match! You: #{player_score} Computer: #{computer_score}")
+    break
+  elsif computer_score == 5
+    prompt("The computer won the match! You: #{player_score} Computer: #{computer_score}")
+    break
+  else
+    prompt("You: #{player_score} Computer: #{computer_score}")
+  end
 
   prompt("Do you want to play again? (y/n)")
   answer = gets.chomp
