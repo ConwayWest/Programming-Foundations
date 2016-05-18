@@ -14,7 +14,7 @@ end
 # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
 def display_board(brd)
   system 'clear'
-  puts "You're a #{PLAYER_MARKER}. Computer is #{COMPUTER_MARKER}."
+  prompt "You're a #{PLAYER_MARKER}. Computer is #{COMPUTER_MARKER}."
   puts ""
   puts "     |     |"
   puts "  #{brd[1]}  |  #{brd[2]}  |  #{brd[3]}"
@@ -44,7 +44,7 @@ end
 def player_places_piece!(brd)
   square = ''
   loop do
-    prompt "Choose a square (#{empty_squares(brd).join(', ')}):"
+    prompt "Choose a position to place a piece: (#{joinor(empty_squares(brd))}):"
     square = gets.chomp.to_i
     break if empty_squares(brd).include?(square)
     prompt "Sorry, that's not a valid choice."
@@ -53,8 +53,12 @@ def player_places_piece!(brd)
 end
 
 def computer_places_piece!(brd)
-  square = empty_squares(brd).sample
-  brd[square] = COMPUTER_MARKER
+  if brd.values_at(*line).count(PLAYER_MARKER) == 2 && brd.values_at(*line).count(INITIAL_MARKER) == 1
+
+  else
+    square = empty_squares(brd).sample
+    brd[square] = COMPUTER_MARKER
+  end
 end
 
 def board_full?(brd)
@@ -76,30 +80,59 @@ def detect_winner(brd)
   nil
 end
 
-loop do
-  board = initialize_board
-
-  loop do
-    display_board(board)
-
-    player_places_piece!(board)
-    break if someone_won?(board) || board_full?(board)
-
-    computer_places_piece!(board)
-    break if someone_won?(board) || board_full?(board)
-  end
-
-  display_board(board)
-
-  if someone_won?(board)
-    prompt "#{detect_winner(board)} won!"
-  else
-    prompt "It's a tie!"
-  end
-
-  prompt "Play again? (y or n)"
-  answer = gets.chomp
-  break unless answer.downcase.start_with?('y')
+def joinor(arr, delimiter = ', ', word = 'and')
+  # if brd.length == 1
+  #   brd
+  # else
+  #   last = brd.pop
+  #   arr = brd.join("#{delimiter}") + " #{word} #{last}"
+  #   arr
+  # end
+  arr[-1] = "#{word} #{arr.last}" if arr.size > 1
+  arr.join(delimiter)
 end
 
+def keep_score(brd)
+  winner = detect_winner(brd)
+end
+
+loop do
+  scores = {"Player" => 0, "Computer" => 0}
+  prompt "Welcome to Tic Tac Toe"
+  prompt "First to 5 wins!"
+  prompt "Player Score: #{scores["Player"]}. Computer Score: #{scores["Computer"]}."
+  prompt ""
+  loop do
+    board = initialize_board
+
+    loop do
+      display_board(board)
+
+      player_places_piece!(board)
+      break if someone_won?(board) || board_full?(board)
+
+      computer_places_piece!(board)
+      break if someone_won?(board) || board_full?(board)
+    end
+
+    display_board(board)
+
+    if someone_won?(board)
+      prompt "#{detect_winner(board)} won!"
+      scores[keep_score(board)] += 1
+      prompt "Player Score: #{scores["Player"]}. Computer Score: #{scores["Computer"]}."
+    else
+      prompt "It's a tie!"
+    end
+
+    break if scores[keep_score(board)] == 5
+
+    prompt "Play again? (y or n)"
+    answer = gets.chomp
+    break unless answer.downcase.start_with?('y')
+  end
+  break
+end
+
+prompt ""
 prompt "Thanks for playing Tic Tac Toe! Goodbye!"
