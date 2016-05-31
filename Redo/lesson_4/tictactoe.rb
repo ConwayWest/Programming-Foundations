@@ -1,5 +1,7 @@
 require 'pry'
 
+FIRST_SETTING = 'CHOOSE'.freeze
+PLAYERS = ['YOU', 'COMPUTER']
 INITIAL_MARKER = ' '.freeze
 PLAYER_MARKER = 'X'.freeze
 COMPUTER_MARKER = 'O'.freeze
@@ -11,9 +13,12 @@ def prompt(msg)
   puts "=> #{msg}"
 end
 
+def clear
+  system "cls"
+end
+
 # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
 def display_board(brd)
-  system 'clear'
   prompt "You're a #{PLAYER_MARKER}. Computer is #{COMPUTER_MARKER}."
   puts ""
   puts "     |     |"
@@ -53,12 +58,33 @@ def player_places_piece!(brd)
 end
 
 def computer_places_piece!(brd)
-  if brd.values_at(*line).count(PLAYER_MARKER) == 2 && brd.values_at(*line).count(INITIAL_MARKER) == 1
+  square = nil
 
-  else
-    square = empty_squares(brd).sample
-    brd[square] = COMPUTER_MARKER
+  #offense
+  WINNING_LINES.each do |line|
+    square = find_at_risk_square(line, brd, COMPUTER_MARKER)
+    break if square
   end
+
+  #defense
+  if !square 
+    WINNING_LINES.each do |line|
+      square = find_at_risk_square(line, brd, PLAYER_MARKER)
+      break if square
+    end
+  end
+
+  #pick square 5
+  if empty_squares(brd).include?(5)
+    square = 5
+  end
+
+  #random
+  if !square
+    square = empty_squares(brd).sample
+  end
+
+  brd[square] = COMPUTER_MARKER
 end
 
 def board_full?(brd)
@@ -81,19 +107,35 @@ def detect_winner(brd)
 end
 
 def joinor(arr, delimiter = ', ', word = 'and')
-  # if brd.length == 1
-  #   brd
-  # else
-  #   last = brd.pop
-  #   arr = brd.join("#{delimiter}") + " #{word} #{last}"
-  #   arr
-  # end
   arr[-1] = "#{word} #{arr.last}" if arr.size > 1
   arr.join(delimiter)
 end
 
 def keep_score(brd)
   winner = detect_winner(brd)
+end
+
+def find_at_risk_square(line, board, marker)
+  if board.values_at(*line).count(marker) == 2
+    board.select{|k,v| line.include?(k) && v == INITIAL_MARKER}.keys.first
+  else
+    nil
+  end
+end
+
+def place_piece!(brd, current_player)
+  #if current_player == 'YOU'
+  #  player_places_piece!(brd)
+  #elsif current_player == 'COMPUTER'
+  #  computer_places_piece!(brd)
+  #end
+
+  player_places_piece!(brd) if current_player == 'YOU'
+  computer_places_piece!(brd) if current_player == 'COMPUTER'
+end
+
+def alternate_player(current_player)
+  current_player == 'YOU' ? 'COMPUTER' : 'YOU'
 end
 
 loop do
@@ -104,17 +146,19 @@ loop do
   prompt ""
   loop do
     board = initialize_board
-
+    clear
+    current_player = PLAYERS.sample.to_s
+    prompt "#{current_player} goes first!"
+    prompt ""
     loop do
-      display_board(board)
-
-      player_places_piece!(board)
-      break if someone_won?(board) || board_full?(board)
-
-      computer_places_piece!(board)
-      break if someone_won?(board) || board_full?(board)
+        display_board(board)
+        place_piece!(board, current_player)
+        break if someone_won?(board) || board_full?(board)
+        current_player = alternate_player(current_player)
+        clear
     end
 
+    clear
     display_board(board)
 
     if someone_won?(board)
