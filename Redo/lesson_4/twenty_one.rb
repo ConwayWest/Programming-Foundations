@@ -1,10 +1,11 @@
-SUITES = {
+require 'pry'
+
+SUITS = {
   'S' => 'Spades',
   'D' => 'Diamonds',
   'H' => 'Hearts',
   'C' => 'Clubs'
 }.freeze
-
 CARDWORDS = {
   'A' => 'Ace',
   'K' => 'King',
@@ -20,92 +21,178 @@ CARDWORDS = {
   '3' => 'Three',
   '2' => 'Two'
 }.freeze
+SUITS_DECK = ['H', 'D', 'S', 'C'].freeze
+VALUES_DECK = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'].freeze
+DEALER_LIMIT = 17.freeze
+GAME_LIMIT = 21.freeze
 
 def prompt(msg)
   puts "=> #{msg}"
 end
 
-def ace_value(hand)
-  if hand + 11 > 21
-    1
-  else
-    11
-  end
+def clear
+  system "cls"
 end
 
-def value_cards(card, hand)
-  if card == 'A'
-    ace_value(hand)
-  elsif card == 'J' || card == 'Q' || card == 'K'
-    10
-  else
-    card.to_i
-  e
-  nd
-end
-
-def deal_cards(hand, d)
-  hand << d.delete(d.sample)
-end
-
-def announce_cards(card)
+def spell_cards(card)
   if CARDWORDS.include?(card)
     CARDWORDS[card].to_s
-  elsif SUITES.include?(card)
-    SUITES[card].to_s
+  elsif SUITS.include?(card)
+    SUITS[card].to_s
   end
 end
 
-loop do
-  deck = [['S', '2'], ['S', '3'], ['S', '4'],
-          ['S', '5'], ['S', '6'], ['S', '7'],
-          ['S', '8'], ['S', '9'], ['S', '10'],
-          ['S', 'J'], ['S', 'Q'], ['S', 'K'],
-          ['S', 'A'], ['D', '2'], ['D', '3'],
-          ['D', '4'], ['D', '5'], ['D', '6'],
-          ['D', '7'], ['D', '8'], ['D', '9'],
-          ['D', '10'], ['D', 'J'], ['D', 'Q'],
-          ['D', 'K'], ['D', 'A'], ['H', '2'],
-          ['H', '3'], ['H', '4'], ['H', '5'],
-          ['H', '6'], ['H', '7'], ['H', '8'],
-          ['H', '9'], ['H', '10'], ['H', 'J'],
-          ['H', 'Q'], ['H', 'K'], ['H', 'A'],
-          ['C', '2'], ['C', '3'], ['C', '4'],
-          ['C', '5'], ['C', '6'], ['C', '7'],
-          ['C', '8'], ['C', '9'], ['C', '10'],
-          ['C', 'J'], ['C', 'Q'], ['C', 'K'],
-          ['C', 'A']]
-  player_hand = []
-  dealer_hand = []
-  player_total = 0
-  dealer_total = 0
+def total(cards)
+  values = cards.map { |card| card[1] }
 
-  deck.shuffle!
-  2.times do
-    deal_cards(player_hand, deck)
-    deal_cards(dealer_hand, deck)
+  sum = 0
+  values.each do |value|
+    if value == "A"
+      sum += 11
+    elsif value.to_i == 0
+      sum += 10
+    else
+      sum += value.to_i
+    end
   end
+  values.select { |value| value == "A" }.count.times do
+    sum -= 10 if sum > GAME_LIMIT
+  end
+  sum
+end
 
-  player_total = value_cards(player_hand[0][1], player_total) + value_cards(player_hand[1][1], player_total)
-  dealer_total = value_cards(dealer_hand[1][1], dealer_total)
+def busted?(hand_total)
+  if hand_total > GAME_LIMIT
+    true
+  else
+    false
+  end
+end
+
+def winner?(p_total, d_total)
+  result = calc_win(p_total, d_total)
+
+  case result
+  when 'Player'
+    prompt "You won! Dealer Loses!"
+  when 'Dealer'
+    prompt "Dealer won! You lose!"
+  else
+    prompt "Tie!"
+  end
+end
+
+def calc_win(player, dealer)
+  if player.to_i > dealer.to_i
+    'Player'
+  elsif dealer.to_i > player.to_i
+    'Dealer'
+  else
+    'Tie'
+  end
+end
+
+def display_totals(p_total, d_total)
+  prompt "Your current total: #{p_total}"
+  prompt "Dealer current total: #{d_total}"
+end
+loop do
+  scores = {"Player" => 0, "Dealer" => 0, "Tie" => 0}
   loop do
-    prompt "Welcome to Twenty One"
-    prompt "The object of the game is to get as close to 21"
-    prompt "while not trying to bust or be outplayed by the dealer."
-    prompt "Dealer must hit till at least 17 is reached."
-    prompt ""
-    prompt "Shuffling..."
-    prompt ""
-    prompt "You: #{announce_cards(player_hand[0][1])} of #{announce_cards(player_hand[0][0])} & #{announce_cards(player_hand[1][1])} of #{announce_cards(player_hand[1][0])}"
-    prompt "Dealer: #{announce_cards(dealer_hand[1][1])} of #{announce_cards(dealer_hand[1][0])} and one face down card..."
-    prompt ""
+    deck = SUITS_DECK.product(VALUES_DECK).shuffle
+    player_hand = []
+    dealer_hand = []
+    player_total = 0
+    dealer_total = 0
+    answer = nil
 
+    2.times do
+      player_hand << deck.pop
+      dealer_hand << deck.pop
+    end
+
+    player_total = total(player_hand)
+    dealer_total = total(dealer_hand)
     loop do
-      prompt "Your current total: #{player_total}"
-      prompt "Dealer total: #{dealer_total}"
+      prompt "Welcome to Twenty One"
+      prompt "The object of the game is to get as close to 21"
+      prompt "while not trying to bust or be outplayed by the dealer."
+      prompt "Dealer must hit till at least 17 is reached."
+      prompt ""
+      prompt "Shuffling..."
+      prompt ""
+      prompt "You: #{spell_cards(player_hand[0][1])} of #{spell_cards(player_hand[0][0])} & #{spell_cards(player_hand[1][1])} of #{spell_cards(player_hand[1][0])}"
+      prompt "Dealer: #{spell_cards(dealer_hand[1][1])} of #{spell_cards(dealer_hand[1][0])} and one face down card..."
+      prompt ""
+
+      loop do
+        prompt "Your current total: #{player_total}"
+        prompt ""
+
+        loop do
+          prompt "Would you like to (h)it or (s)tay?"
+          answer = gets.chomp
+
+          if answer.downcase.start_with?('h')
+            player_hand << deck.pop
+            player_total = total(player_hand)
+
+            prompt "You drew a #{spell_cards(player_hand.last.last)} of #{spell_cards(player_hand.last.first)}"
+            prompt ""
+            prompt "Your current total: #{player_total}"
+          end
+          break if answer.downcase.start_with?('s') || busted?(player_total)
+        end
+
+        if busted?(player_total)
+          prompt "Player hand over 21, you have busted."
+          player_total = 'Busted'
+          prompt ""
+          display_totals(player_total, dealer_total)
+          break
+        else
+          prompt "You have chosen to stay."
+        end
+        prompt ""
+        prompt "Dealer flips over face down card...#{spell_cards(dealer_hand[0][1])} of #{spell_cards(dealer_hand[0][0])}"
+        prompt "Dealer current total: #{dealer_total}"
+        prompt ""
+        while total(dealer_hand) < DEALER_LIMIT
+          prompt "Dealer Hits!"
+          prompt ""
+          dealer_hand << deck.pop
+          dealer_total = total(dealer_hand)
+          prompt "Dealer drew a #{spell_cards(dealer_hand.last.last)} of #{spell_cards(dealer_hand.last.first)}"
+          prompt "Dealer current total: #{dealer_total}"
+          prompt ""
+        end
+        dealer_total = total(dealer_hand)
+
+        prompt ""
+        if busted?(dealer_total)
+          prompt "Dealer busted, you win!"
+          prompt ""
+          dealer_total = "Busted"
+          display_totals(player_total, dealer_total)
+        else
+          display_totals(player_total, dealer_total)
+          prompt ""
+          winner?(player_total, dealer_total)
+        end
+        break
+      end
       break
     end
-    break
+    scores[calc_win(player_total, dealer_total)] += 1
+    prompt "Your Score: #{scores['Player']}   Dealer Score: #{scores['Dealer']}"
+    prompt ""
+    break if scores['Player'] == 5 || scores['Dealer'] == 5
+    prompt "Would you like to play another round?"
+    again = gets.chomp
+    break unless again.downcase.start_with?('y')
+    clear
   end
+
+  prompt "Thank you for playing Twenty-One!"
   break
 end
