@@ -1,3 +1,5 @@
+require 'pry'
+
 INITIAL_MARKER = ' '.freeze
 PLAYER_MARKER = 'X'.freeze
 COMPUTER_MARKER = 'O'.freeze
@@ -7,6 +9,7 @@ def prompt(msg)
 end
 
 def display_board(brd)
+  system 'cls'
   puts ""
   puts "     |     |"
   puts "  #{brd[1]}  |  #{brd[2]}  |  #{brd[3]}"
@@ -44,9 +47,54 @@ def player_places_piece!(brd)
   brd[square] = PLAYER_MARKER
 end
 
+def computer_places_piece!(brd)
+  square = empty_squares(brd).sample
+  brd[square] = COMPUTER_MARKER
+end
+
+def board_full?(brd)
+  empty_squares(brd).empty?
+end
+
+def someone_won?(brd)
+  !!detect_winner(brd)
+end
+
+def detect_winner(brd)
+  winning_lines = [[1, 2, 3], [4, 5, 6], [6, 7, 8]] + # rows
+                  [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # columns
+                  [[1, 5, 9], [3, 5, 7]]              # diagnals
+
+  winning_lines.each do |line|
+    if brd[line[0]] == PLAYER_MARKER && 
+       brd[line[1]] == PLAYER_MARKER && 
+       brd[line[2]] == PLAYER_MARKER
+       return 'Player'
+     elsif brd[line[0]] == COMPUTER_MARKER && 
+       brd[line[1]] == COMPUTER_MARKER && 
+       brd[line[2]] == COMPUTER_MARKER
+      return 'Computer'
+     end
+  end
+  nil
+end
+
 board = initialize_board
+
+loop do
+  display_board(board)
+
+  player_places_piece!(board)
+  break if someone_won?(board) || board_full?(board)
+
+  computer_places_piece!(board)
+  break if someone_won?(board) || board_full?(board)
+end
+
 display_board(board)
 
-player_places_piece!(board)
-puts board.inspect
-display_board(board)
+if someone_won?(board)
+  prompt "#{detect_winner(board)} won!"
+else
+  prompt "It's a tie!"
+end
