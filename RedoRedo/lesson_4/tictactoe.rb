@@ -115,17 +115,29 @@ def find_at_risk_square(line, board, marker)
 end
 
 scores = {'Player' => 0, 'Computer' => 0}
+if FIRST_PLAY == "Choose"
+  prompt "Who would you like to go first? ('1' for yourself, '2' for Computer)"
+  first = gets.chomp
+end
 loop do
   board = initialize_board
 
   loop do
-      display_board(board)
+      if first == '1'
+        display_board(board)
+        player_places_piece!(board)
+        break if someone_won?(board) || board_full?(board)
 
-      player_places_piece!(board)
-      break if someone_won?(board) || board_full?(board)
+        computer_places_piece!(board)
+        break if someone_won?(board) || board_full?(board)
+      elsif first == '2'
+        computer_places_piece!(board)
+        display_board(board)
+        break if someone_won?(board) || board_full?(board)
 
-      computer_places_piece!(board)
-      break if someone_won?(board) || board_full?(board)
+        player_places_piece!(board)
+        break if someone_won?(board) || board_full?(board)
+      end
     end
 
     display_board(board)
