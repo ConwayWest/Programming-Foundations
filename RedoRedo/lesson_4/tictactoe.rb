@@ -1,20 +1,25 @@
 require 'pry'
 
-WINNING_LINES = [[1, 2, 3], [4, 5, 6], [6, 7, 8]] + # rows
-                [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # columns
-                [[1, 5, 9], [3, 5, 7]].freeze       # diagnals
+FIRST_PLAY = "Choose".freeze
+PLAYERS = ['YOU', 'COMPUTER'].freeze
 INITIAL_MARKER = ' '.freeze
 PLAYER_MARKER = 'X'.freeze
 COMPUTER_MARKER = 'O'.freeze
-FIRST_PLAY = "Choose"
+WINNING_LINES = [[1, 2, 3], [4, 5, 6], [6, 7, 8]] + # rows
+                [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # columns
+                [[1, 5, 9], [3, 5, 7]].freeze       # diagnals
 
 def prompt(msg)
   puts "=> #{msg}"
 end
 
+def clear
+  system 'cls'
+end
+
 # rubocop:disable Metrics/AbcSize
 def display_board(brd)
-  system 'clear'
+  clear
   puts "Player: #{PLAYER_MARKER} Computer: #{COMPUTER_MARKER}"
   puts ""
   puts "     |     |"
@@ -114,44 +119,39 @@ def find_at_risk_square(line, board, marker)
   end
 end
 
-scores = {'Player' => 0, 'Computer' => 0}
-if FIRST_PLAY == "Choose"
-  prompt "Who would you like to go first? ('1' for yourself, '2' for Computer)"
-  first = gets.chomp
+def place_piece!(player, brd)
+  player_places_piece!(brd) if player == 'YOU'
+  computer_places_piece!(brd) if player == 'COMPUTER'
 end
+
+def alternate_player(player)
+  player == 'YOU' ? 'COMPUTER' : 'YOU'
+end
+
+scores = {'Player' => 0, 'Computer' => 0}
+first_player = PLAYERS.sample
 loop do
   board = initialize_board
-
+  current_player = first_player
   loop do
-      if first == '1'
-        display_board(board)
-        player_places_piece!(board)
-        break if someone_won?(board) || board_full?(board)
-
-        computer_places_piece!(board)
-        break if someone_won?(board) || board_full?(board)
-      elsif first == '2'
-        computer_places_piece!(board)
-        display_board(board)
-        break if someone_won?(board) || board_full?(board)
-
-        player_places_piece!(board)
-        break if someone_won?(board) || board_full?(board)
-      end
-    end
-
     display_board(board)
+    place_piece!(current_player, board)
+    break if someone_won?(board) || board_full?(board)
+    current_player = alternate_player(current_player)
+  end
 
-    if someone_won?(board)
-      prompt "#{detect_winner(board)} won!"
-      scores[detect_winner(board)] += 1
-      prompt ""
-      prompt "Player Score: #{scores['Player']} Computer Score: #{scores['Computer']}"
-    else
-      prompt "It's a tie!"
-    end
+  display_board(board)
 
-    break if scores[detect_winner(board)] == 5
+  if someone_won?(board)
+    prompt "#{detect_winner(board)} won!"
+    scores[detect_winner(board)] += 1
+    prompt ""
+    prompt "Player Score: #{scores['Player']} Computer Score: #{scores['Computer']}"
+  else
+    prompt "It's a tie!"
+  end
+
+  break if scores[detect_winner(board)] == 5
 
   prompt "Play again? (y or n)"
   answer = gets.chomp
