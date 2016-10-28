@@ -1,0 +1,31 @@
+# calculator_messages.yml
+
+language: "1) English 2) Espanol"
+valid_lang: "INVALID LANGUAGE! PLEASE TRY AGAIN! 
+LENGUAJE NO VÁLIDA! Inténtelo de nuevo más!"
+
+en:
+  welcome: "Welcome to Calculator! Enter your name:"
+  valid_name: "Make sure to use a valid name."
+  first_num: "What's the first number?"
+  second_num: "What's the second number?"
+  valid_num: "INVALID NUMBER! PLEASE TRY AGAIN"
+  valid_op: "INVALID OPERATOR! PLEASE TRY AGAIN"
+  hello: "Hi "
+  two_numbers: " the two numbers..."
+  result: "The result is "
+  again: "Perform another calculation? (Y to calculate again)"
+  thanks: "Thank you for using the Calculator! Goodbye!"
+
+es:
+  welcome: "Bienvenido a la calculadora! Introduzca su nombre:"
+  valid_name: "Asegúrese de utilizar un nombre válido."
+  first_num: "¿Cuál es el primer número?"
+  second_num: "¿Cuál es el segundo número?"
+  valid_num: "¡NÚMERO INVALIDO! Inténtelo de nuevo más"
+  valid_op: "Operador no válido! Inténtelo de nuevo más"
+  hello: "Hola "
+  two_numbers: " los dos números ..."
+  result: "El resultado es "
+  again: "Realizar otro cálculo? (Y para calcular de nuevo)"
+  thanks: "Gracias por usar la calculadora! ¡Adiós!"
