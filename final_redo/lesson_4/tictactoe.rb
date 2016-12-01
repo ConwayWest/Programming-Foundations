@@ -1,3 +1,5 @@
+require 'pry'
+
 INITIAL_MARKER = ' '.freeze
 PLAYER_MARKER = 'X'.freeze
 COMPUTER_MARKER = 'O'.freeze
@@ -42,6 +44,7 @@ end
 def player_places_piece!(brd)
   square = ''
   loop do
+    binding.pry
     prompt "Choose a square (#{empty_squares(brd).join(', ')}):"
     square = gets.chomp.to_i
     break if empty_squares(brd).include?(square)
@@ -73,6 +76,10 @@ def detect_winner(brd)
     end
   end
   nil
+end
+
+def joinor(array, delim = ', ', last = 'or')
+  array_size = array.size
 end
 
 loop do
