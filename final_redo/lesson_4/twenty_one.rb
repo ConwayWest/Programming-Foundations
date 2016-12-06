@@ -1,22 +1,16 @@
 require 'pry'
 
-deck = [['D', 'A'], ['D', 2], ['D', 3], ['D', 4], ['D', 5],
-        ['D', 6], ['D', 7], ['D', 8], ['D', 9], ['D', 10],
-        ['D', 'J'], ['D', 'Q'], ['D', 'K'],
-        ['S', 'A'], ['S', 2], ['S', 3], ['S', 4], ['S', 5],
-        ['S', 6], ['S', 7], ['S', 8], ['S', 9], ['S', 10],
-        ['S', 'J'], ['S', 'Q'], ['S', 'K'],
-        ['H', 'A'], ['H', 2], ['H', 3], ['H', 4], ['H', 5],
-        ['H', 6], ['H', 7], ['H', 8], ['H', 9], ['H', 10],
-        ['H', 'J'], ['H', 'Q'], ['H', 'K'],
-        ['C', 'A'], ['C', 2], ['C', 3], ['C', 4], ['C', 5],
-        ['C', 6], ['C', 7], ['C', 8], ['C', 9], ['C', 10],
-        ['C', 'J'], ['C', 'Q'], ['C', 'K']]
-dealer_hand = []
-player_hand = []
+SUITS = ['H', 'D', 'S', 'C'].freeze
+VALUES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K', 'A'].freeze
+DEALER_LIMIT = 17
+GAME_LIMIT = 21
 
 def prompt(msg)
   puts "=> #{msg}"
+end
+
+def new_deck
+  SUITS.product(VALUES).shuffle
 end
 
 def deal_cards(deck, player, dealer)
@@ -24,12 +18,13 @@ def deal_cards(deck, player, dealer)
   dealer << deck.delete(deck.sample)
 end
 
-def display_hands(player, dealer, game_phase = 'player')
+def display_hands(player, dealer, game_phase, error = 0)
   system('clear')
-  prompt "WELCOME TO TWENTY-ONE!"
+  prompt "###INVALID INPUT###" if error > 0
+  prompt "Welcome to Twenty-One!"
   prompt "Player Hand: #{player}"
   prompt "Value: #{hand_value(player)}"
-  puts ""
+
   if game_phase == 'player'
     prompt "Dealer Hand: #{dealer[0]}"
     prompt "Value: #{hand_value(dealer[0])}"
@@ -45,7 +40,7 @@ def hit(deck, hand)
 end
 
 def busted?(hand)
-  return true if hand_value(hand) > 21
+  return true if hand_value(hand) > GAME_LIMIT
 end
 
 def hand_value(hand)
@@ -73,12 +68,10 @@ end
 
 def ace_value(card_values)
   card_values.each do |x|
-    if x == 'A'
-      if sum_values(card_values) > 10
-        card_values[card_values.index(x)] = 1
-      else
-        card_values[card_values.index(x)] = 11
-      end
+    if x == 'A' && sum_values(card_values) > 10
+      card_values[card_values.index(x)] = 1
+    elsif x == 'A'
+      card_values[card_values.index(x)] = 11
     end
   end
 end
@@ -92,43 +85,73 @@ def sum_values(card_values)
   sum
 end
 
-2.times { deal_cards(deck, player_hand, dealer_hand) }
-
-loop do
-  display_hands(player_hand, dealer_hand)
-  prompt "hit or stay?"
+def play_again?
+  puts "------------"
+  prompt "Do you want to play again? (y or n)"
   answer = gets.chomp
-
-  break if answer == 'stay' || busted?(player_hand)
-  hit(deck, player_hand)
-  break if busted?(player_hand)
-end
-
-if busted?(player_hand)
-  display_hands(player_hand, dealer_hand, 'dealer')
-  prompt "You busted!!!"
+  answer.downcase.start_with?('y')
 end
 
 loop do
-  break if hand_value(dealer_hand) >= 17 || busted?(dealer_hand)
-  hit(deck, dealer_hand)
-end
+  deck = new_deck
+  dealer_hand = []
+  player_hand = []
+  2.times { deal_cards(deck, player_hand, dealer_hand) }
 
-if busted?(dealer_hand) && !busted?(player_hand) == true
-  display_hands(player_hand, dealer_hand, 'dealer')
-  prompt "Dealer busted, you win!!!"
-end
+  loop do
+    player_input = nil
+    error_counter = 0
+    loop do
+      display_hands(player_hand, dealer_hand, 'player', error_counter)
+      prompt "Please input Hit or Stay (not case sensitive)"
+      player_input = gets.chomp.downcase
 
-if !!busted?(player_hand) == false && !!busted?(dealer_hand) == false
-  display_hands(player_hand, dealer_hand, 'dealer')
+      break if player_input == 'hit' ||
+               player_input == 'stay' ||
+               hand_value(player_hand) == GAME_LIMIT
+      error_counter += 1
+    end
 
-  if hand_value(player_hand) > hand_value(dealer_hand)
-    prompt "You win!"
-  elsif hand_value(player_hand) < hand_value(dealer_hand)
-    prompt "You lose."
-  else
-    prompt "It's a tie!"
+    error_counter = 0
+    hit(deck, player_hand) if player_input == 'hit'
+    break if player_input == 'stay' ||
+             busted?(player_hand) ||
+             hand_value(player_hand) == GAME_LIMIT
   end
+
+  player_total = hand_value(player_hand)
+  if busted?(player_hand)
+    display_hands(player_hand, dealer_hand, 'dealer')
+    prompt "You busted!!!"
+    play_again? ? next : break
+  end
+
+  loop do
+    break if hand_value(dealer_hand) >= DEALER_LIMIT ||
+             busted?(dealer_hand) ||
+             player_total == GAME_LIMIT
+    hit(deck, dealer_hand)
+  end
+
+  dealer_total = hand_value(dealer_hand)
+  if busted?(dealer_hand) && !busted?(player_hand) == true
+    display_hands(player_hand, dealer_hand, 'dealer')
+    prompt "Dealer busted, you win!!!"
+    play_again? ? next : break
+  end
+
+  if !!busted?(player_hand) == false && !!busted?(dealer_hand) == false
+    display_hands(player_hand, dealer_hand, 'dealer')
+
+    if player_total > dealer_total
+      prompt "You win!"
+    elsif player_total < dealer_total
+      prompt "You lose."
+    else
+      prompt "It's a tie!"
+    end
+  end
+  break unless play_again?
 end
 
 prompt "Thanks for playing!"
