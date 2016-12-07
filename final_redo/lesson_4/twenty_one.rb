@@ -85,13 +85,15 @@ def sum_values(card_values)
   sum
 end
 
-def play_again?
+def play_again?(player_hand, dealer_hand)
   puts "------------"
   prompt "Do you want to play again? (y or n)"
   answer = gets.chomp
+  display_hands(player_hand, dealer_hand, 'dealer')
   answer.downcase.start_with?('y')
 end
 
+score_keeper = { 'player' => 0, 'dealer' => 0 }
 loop do
   deck = new_deck
   dealer_hand = []
@@ -123,7 +125,7 @@ loop do
   if busted?(player_hand)
     display_hands(player_hand, dealer_hand, 'dealer')
     prompt "You busted!!!"
-    play_again? ? next : break
+    play_again?(player_hand, dealer_hand) ? next : break
   end
 
   loop do
@@ -137,21 +139,27 @@ loop do
   if busted?(dealer_hand) && !busted?(player_hand) == true
     display_hands(player_hand, dealer_hand, 'dealer')
     prompt "Dealer busted, you win!!!"
-    play_again? ? next : break
+    play_again?(player_hand, dealer_hand) ? next : break
   end
 
   if !!busted?(player_hand) == false && !!busted?(dealer_hand) == false
     display_hands(player_hand, dealer_hand, 'dealer')
 
     if player_total > dealer_total
+      score_keeper['player'] += 1
       prompt "You win!"
     elsif player_total < dealer_total
+      score_keeper['dealer'] += 1
       prompt "You lose."
     else
       prompt "It's a tie!"
     end
   end
-  break unless play_again?
+  break unless play_again?(player_hand, dealer_hand) ||
+               score_keeper['player'] == 5 ||
+               score_keeper['dealer'] == 5
 end
 
+prompt "SCORES"
+prompt "Player: #{score_keeper['player']}   Dealer: #{score_keeper['dealer']}"
 prompt "Thanks for playing!"
